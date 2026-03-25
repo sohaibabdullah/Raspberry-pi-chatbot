@@ -2,6 +2,10 @@ import subprocess
 import os
 import speech_recognition as sr
 import google.generativeai as genai
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 # --- CONFIGURATION ---
 DEVICE = "hw:2,0"
@@ -9,7 +13,8 @@ DURATION = 5
 FILENAME = "voice_capture.wav"
 RATE = 44100
 
-ANTHROPIC_API_KEY = "your-api-key-here"   
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")   
 
 def record_audio():
     print(f"--- Starting Recording ({DURATION} seconds) ---")
