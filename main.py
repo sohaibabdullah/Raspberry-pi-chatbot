@@ -11,7 +11,7 @@ load_dotenv()
 DEVICE = "hw:2,0"
 DURATION = 5
 FILENAME = "voice_capture.wav"
-RATE = 44100
+RATE = 48000
 
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")   
