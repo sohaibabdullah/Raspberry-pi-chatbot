@@ -1,7 +1,7 @@
 import subprocess
 import os
 import speech_recognition as sr
-import anthropic        
+import google.generativeai as genai
 
 # --- CONFIGURATION ---
 DEVICE = "hw:2,0"
@@ -9,7 +9,7 @@ DURATION = 5
 FILENAME = "voice_capture.wav"
 RATE = 44100
 
-ANTHROPIC_API_KEY = "your-api-key-here"   # NEW - paste your key here
+ANTHROPIC_API_KEY = "your-api-key-here"   
 
 def record_audio():
     print(f"--- Starting Recording ({DURATION} seconds) ---")
@@ -26,14 +26,14 @@ def record_audio():
     except FileNotFoundError:
         print("Error: 'arecord' command not found.")
 
-# NEW - Converts wav file to text using Whisper (runs locally)
+# Converts wav file to text using Whisper (runs locally)
 def transcribe_audio(filename):
     print("--- Transcribing audio... ---")
     recognizer = sr.Recognizer()
     with sr.AudioFile(filename) as source:
         audio = recognizer.record(source)
     try:
-        text = recognizer.recognize_google(audio)  # Free, no API key needed
+        text = recognizer.recognize_google(audio)  
         print(f"--- You said: {text} ---")
         return text
     except sr.UnknownValueError:
@@ -43,31 +43,26 @@ def transcribe_audio(filename):
         print(f"Google Speech service error: {e}")
         return ""
 
-# NEW - Sends text to Claude and returns the response
-def ask_claude(question):
-    print("--- Sending to Claude... ---")
-    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-    message = client.messages.create(
-        model="claude-opus-4-6",
-        max_tokens=1024,
-        messages=[
-            {"role": "user", "content": question}
-        ]
-    )
-    answer = message.content[0].text
+# Sends text to LLM and returns the response
+def ask_llm(question):
+    print("--- Sending to Gemini... ---")
+    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+    model = genai.GenerativeModel("gemini-1.5-flash")  
+    response = model.generate_content(question)
+    answer = response.text
     return answer
 
 if __name__ == "__main__":
     # Step 1: Record
     record_audio()
 
-    # Step 2: Transcribe (NEW)
+    # Step 2: Transcribe 
     question = transcribe_audio(FILENAME)
 
-    # Step 3: Ask Claude and print answer (NEW)
+    # Step 3: Ask LLM and print answer 
     if question:
-        answer = ask_claude(question)
-        print("\n--- Claude's Answer ---")
+        answer = ask_llm(question)
+        print("\n--- LLM's Answer ---")
         print(answer)
     else:
         print("Could not understand audio, please try again.")
