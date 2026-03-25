@@ -3,6 +3,8 @@ import os
 import speech_recognition as sr
 import google.generativeai as genai
 from dotenv import load_dotenv
+import requests
+
 
 load_dotenv()
 
@@ -51,11 +53,17 @@ def transcribe_audio(filename):
 # Sends text to LLM and returns the response
 def ask_llm(question):
     print("--- Sending to Gemini... ---")
-    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-    model = genai.GenerativeModel("gemini-1.5-flash")  
-    response = model.generate_content(question)
-    answer = response.text
+    api_key = os.getenv("GEMINI_API_KEY")
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
+    
+    payload = {
+        "contents": [{"parts": [{"text": question}]}]
+    }
+    
+    response = requests.post(url, json=payload)
+    answer = response.json()["candidates"][0]["content"]["parts"][0]["text"]
     return answer
+
 
 if __name__ == "__main__":
     # Step 1: Record
